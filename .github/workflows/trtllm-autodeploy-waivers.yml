@@ -1,0 +1,47 @@
+name: TRT-LLM AutoDeploy waivers
+
+on:
+  schedule:
+    # GitHub Actions cron is UTC ONLY. 07:00 America/Los_Angeles is 14:00 UTC during
+    # PDT and 15:00 UTC during PST. We trigger at BOTH and then gate to the real
+    # 7am Pacific in the job below, so it lands at 7am year-round (no DST drift).
+    - cron: "0 14 * * 1-5"
+    - cron: "0 15 * * 1-5"
+  workflow_dispatch: {}   # allow manual runs (handy for testing)
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gate to 07:00 America/Los_Angeles
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual run — proceeding."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          HOUR="$(TZ=America/Los_Angeles date +%H)"
+          echo "America/Los_Angeles hour is $HOUR"
+          if [ "$HOUR" = "07" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not 7am Pacific — skipping this trigger."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Post AutoDeploy waivers to Slack
+        if: steps.gate.outputs.run == 'true'
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.AUTODEPLOY_WAIVECOP }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+        run: python3 .github/scripts/post_autodeploy_waivers.py
