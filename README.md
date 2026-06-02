@@ -24,8 +24,8 @@ tests (with nvbug IDs) as a **threaded reply**, **weekdays at 7:00 AM Pacific**,
 2. Add credentials under **Settings → Secrets and variables → Actions**:
    - **Secret** `AUTODEPLOY_WAIVECOP` = `xoxb-...` (Bot User OAuth Token). The workflow
      maps this secret to the script's `SLACK_BOT_TOKEN` env var, so the script needs no change.
-   - **Variable** `SLACK_CHANNEL_ID` = `C0XXXXXXXXX` (target channel ID — e.g. your
-     `#auto-deploy-dev` once it exists; copy it from the channel URL).
+   - **Variable** `AUTODEPLOY_DEV_CHANNEL` = `C0XXXXXXXXX` (target channel ID — e.g. your
+     `#auto-deploy-dev` once it exists; copy it from the channel URL). The workflow maps it to the `SLACK_CHANNEL_ID` env var the script reads.
 3. Make sure the bot can post to that channel:
    - **Public** channel → `chat:write.public` covers it, no invite needed.
    - **Private** channel → `/invite @trtllm-autodeploy-waivers` after installing the app.
@@ -53,5 +53,5 @@ WAIVES_URL="file://$PWD/waives.txt" DRY_RUN=1 python3 .github/scripts/post_autod
 ## Notes
 
 - Never commit the token — it lives only in repo secrets.
-- To post to a different channel, just change the `SLACK_CHANNEL_ID` variable.
+- To post to a different channel, just change the `AUTODEPLOY_DEV_CHANNEL` variable.
 - The message body is identical to `../reference_parser.py`.

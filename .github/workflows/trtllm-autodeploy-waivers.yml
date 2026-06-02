@@ -43,5 +43,5 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         env:
           SLACK_BOT_TOKEN: ${{ secrets.AUTODEPLOY_WAIVECOP }}
-          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          SLACK_CHANNEL_ID: ${{ vars.AUTODEPLOY_DEV_CHANNEL }}
         run: python3 .github/scripts/post_autodeploy_waivers.py
