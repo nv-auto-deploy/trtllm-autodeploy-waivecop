@@ -2,12 +2,15 @@ name: TRT-LLM AutoDeploy waivers
 
 on:
   schedule:
-    # GitHub Actions cron is UTC ONLY. 07:00 America/Los_Angeles is 14:00 UTC during
-    # PDT and 15:00 UTC during PST. We trigger at BOTH and then gate to the real
-    # 7am Pacific in the job below, so it lands at 7am year-round (no DST drift).
+    # GitHub Actions cron is UTC ONLY, and is best-effort (runs can be delayed).
+    # 07:00 America/Los_Angeles is 14:00 UTC during PDT and 15:00 UTC during PST.
+    # We register BOTH; the gate below runs whichever one corresponds to 7am in the
+    # CURRENT DST period. The gate keys off the timezone OFFSET + which cron fired
+    # (github.event.schedule) — NOT the wall-clock hour — so a GitHub cron delay can
+    # make the post arrive late, but it can no longer silently skip.
     - cron: "0 14 * * 1-5"
     - cron: "0 15 * * 1-5"
-  workflow_dispatch: {}   # allow manual runs (handy for testing)
+  workflow_dispatch: {}   # allow manual runs (handy for testing; always posts)
 
 jobs:
   post:
@@ -16,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Gate to 07:00 America/Los_Angeles
+      - name: Decide whether this run should post (7am Pacific, DST-aware)
         id: gate
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -24,12 +27,16 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          HOUR="$(TZ=America/Los_Angeles date +%H)"
-          echo "America/Los_Angeles hour is $HOUR"
-          if [ "$HOUR" = "07" ]; then
+          OFFSET="$(TZ=America/Los_Angeles date +%z)"   # -0700 (PDT) or -0800 (PST)
+          SCHED="${{ github.event.schedule }}"
+          echo "Pacific UTC offset: $OFFSET ; triggering cron: '$SCHED'"
+          # 14:00 UTC == 07:00 PDT ; 15:00 UTC == 07:00 PST.
+          if [ "$OFFSET" = "-0700" ] && [ "$SCHED" = "0 14 * * 1-5" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$OFFSET" = "-0800" ] && [ "$SCHED" = "0 15 * * 1-5" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Not 7am Pacific — skipping this trigger."
+            echo "Not the 7am-Pacific trigger for the current DST period — skipping."
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 

@@ -35,10 +35,13 @@ tests (with nvbug IDs) as a **threaded reply**, **weekdays at 7:00 AM Pacific**,
 
 ## Schedule / timezone
 
-GitHub cron is **UTC-only**, so the workflow triggers at `14:00` and `15:00` UTC on
-weekdays, and a gate step proceeds only when it is exactly `07:00` in
-`America/Los_Angeles`. That keeps it at 7 AM Pacific across DST with no drift. To change
-the time, edit the two `cron:` lines and the `TZ` in the gate (and `TZ` in the script).
+GitHub cron is **UTC-only** and best-effort (runs can be delayed). `07:00`
+`America/Los_Angeles` is `14:00` UTC in PDT and `15:00` UTC in PST, so both are registered
+and the gate runs whichever matches the **current DST period** — keying off the timezone
+offset + which cron fired (`github.event.schedule`), not the wall-clock hour. A delayed
+run therefore posts *late* rather than skipping silently. Net effect: one post per
+weekday, ~7 AM Pacific year-round. To change the time, edit the two `cron:` lines (and the
+`-0700`/`-0800` offsets in the gate).
 
 ## Local preview (no posting)
 
@@ -54,4 +57,4 @@ WAIVES_URL="file://$PWD/waives.txt" DRY_RUN=1 python3 .github/scripts/post_autod
 
 - Never commit the token — it lives only in repo secrets.
 - To post to a different channel, just change the `AUTODEPLOY_DEV_CHANNEL` variable.
-- The message body is identical to `../reference_parser.py`.
+- Preview the exact message any time (no posting) with `DRY_RUN=1` — see above.
