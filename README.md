@@ -1,60 +1,77 @@
-# TRT-LLM AutoDeploy waivers — GitHub Actions runner
+# TRT-LLM AutoDeploy Slack notifications — GitHub Actions
 
-Posts a short headline to the channel and the full list of waived TensorRT-LLM AutoDeploy
-tests (with nvbug IDs) as a **threaded reply**, **weekdays at 7:00 AM Pacific**, using
-`chat.postMessage` with a bot token.
+Two GitHub Actions post to Slack about waived TensorRT-LLM AutoDeploy tests:
+
+1. **New-waiver alerts** (hourly) — fires only when a *new* AutoDeploy waiver appears.
+2. **Daily digest** (weekdays, 7:00 AM Pacific) — posts the full current AutoDeploy
+   waiver list.
+
+Both use the same bot token + channel.
 
 ## What's here
 
 ```
-.github/workflows/trtllm-autodeploy-waivers.yml   # the scheduled workflow
-.github/scripts/post_autodeploy_waivers.py                # stdlib-only fetch + parse + post
+.github/workflows/trtllm-autodeploy-waivers.yml   # hourly new-waiver watcher
+.github/workflows/trtllm-autodeploy-digest.yml    # daily 7am Pacific full digest
+.github/scripts/watch_autodeploy_waivers.py       # change detection + alert
+.github/scripts/post_autodeploy_waivers.py        # full-list digest post
+.state/autodeploy_waivers.json                    # snapshot (auto-created & committed)
 ```
 
-## Prerequisites
+## Setup (shared by both)
 
-- A Slack app with a **bot token** (create it from `../webapp-manifest`). Bot scopes:
-  `chat:write` (+ `chat:write.public` to post to public channels without an invite).
-- A **GitHub repo** to host these two files. It does **not** have to be the TensorRT-LLM
-  repo — `waives.txt` is fetched over HTTPS, so any repo you own works.
-
-## Setup
-
-1. Copy the files into your repo, preserving the paths above.
+1. Copy these files into your repo, preserving the paths.
 2. Add credentials under **Settings → Secrets and variables → Actions**:
-   - **Secret** `AUTODEPLOY_WAIVECOP` = `xoxb-...` (Bot User OAuth Token). The workflow
-     maps this secret to the script's `SLACK_BOT_TOKEN` env var, so the script needs no change.
-   - **Variable** `AUTODEPLOY_DEV_CHANNEL` = `C0XXXXXXXXX` (target channel ID — e.g. your
-     `#auto-deploy-dev` once it exists; copy it from the channel URL). The workflow maps it to the `SLACK_CHANNEL_ID` env var the script reads.
-3. Make sure the bot can post to that channel:
-   - **Public** channel → `chat:write.public` covers it, no invite needed.
-   - **Private** channel → `/invite @trtllm-autodeploy-waivers` after installing the app.
-4. Commit & push.
-5. **Test immediately:** Actions tab → "TRT-LLM AutoDeploy waivers" → **Run workflow**.
-   Manual (`workflow_dispatch`) runs bypass the time gate and post right away.
+   - **Secret** `AUTODEPLOY_WAIVECOP` = `xoxb-...` (Bot User OAuth Token) → mapped to the
+     scripts' `SLACK_BOT_TOKEN`.
+   - **Variable** `AUTODEPLOY_DEV_CHANNEL` = `C0XXXXXXXXX` (channel ID) → mapped to
+     `SLACK_CHANNEL_ID`.
+3. Bot must be able to post to the channel: public → `chat:write.public`; private →
+   `/invite` the app.
+4. The watcher needs **`permissions: contents: write`** (already set) to commit its
+   snapshot. The digest needs no special permissions.
+5. Commit & push, then **Actions → Run workflow** on each (the watcher's first run just
+   establishes the baseline; the digest posts immediately on a manual run).
 
-## Schedule / timezone
+## 1) New-waiver alerts (hourly)
 
-GitHub cron is **UTC-only** and best-effort (runs can be delayed). `07:00`
-`America/Los_Angeles` is `14:00` UTC in PDT and `15:00` UTC in PST, so both are registered
-and the gate runs whichever matches the **current DST period** — keying off the timezone
-offset + which cron fired (`github.event.schedule`), not the wall-clock hour. A delayed
-run therefore posts *late* rather than skipping silently. Net effect: one post per
-weekday, ~7 AM Pacific year-round. To change the time, edit the two `cron:` lines (and the
-`-0700`/`-0800` offsets in the gate).
+`waives.txt` lives upstream in `NVIDIA/TensorRT-LLM` (you don't control it, and Actions
+can't trigger on another repo's commits), so this **polls hourly and diffs against a saved
+snapshot** at `.state/autodeploy_waivers.json`:
+
+- Fires **only on additions** — new `auto_deploy`/`autodeploy` test entries. Un-waives
+  (removals) are ignored.
+- The alert names the new waiver(s) explicitly and posts the full current list (new ones
+  marked `:new:`) as a threaded reply.
+- **First run is a baseline:** records the current set and does not alert; alerts start on
+  the next run that adds a waiver.
+- Latency is up to ~1 hour (`cron: "23 * * * *"`, every day; `:23` dodges top-of-hour
+  congestion). ~24 short runs/day — free on public repos, uses minutes on private. Narrow
+  the cron to cut runs (e.g. `"23 13-23 * * 1-5"`).
+
+## 2) Daily digest (weekdays, 7:00 AM Pacific)
+
+Posts the full AutoDeploy waiver list every weekday morning. GitHub cron is UTC and
+best-effort, so it registers both `14:00` (PDT) and `15:00` (PST) UTC and a DST-aware gate
+runs whichever matches the current offset + cron — a delayed run posts late rather than
+skipping. Edit the two `cron:` lines / `-0700`/`-0800` offsets to change the time.
 
 ## Local preview (no posting)
 
 ```bash
-# Live data, just print the message:
+# Daily digest output:
 DRY_RUN=1 python3 .github/scripts/post_autodeploy_waivers.py
 
-# Against a local copy of the file:
-WAIVES_URL="file://$PWD/waives.txt" DRY_RUN=1 python3 .github/scripts/post_autodeploy_waivers.py
+# New-waiver alert (seed a baseline, then point at a file with an added line):
+DRY_RUN=1 STATE_FILE=/tmp/seed.json WAIVES_URL="file://$PWD/before.txt" \
+  python3 .github/scripts/watch_autodeploy_waivers.py
+DRY_RUN=1 STATE_FILE=/tmp/seed.json WAIVES_URL="file://$PWD/after.txt" \
+  python3 .github/scripts/watch_autodeploy_waivers.py
 ```
+
+`DRY_RUN=1` prints instead of posting.
 
 ## Notes
 
 - Never commit the token — it lives only in repo secrets.
-- To post to a different channel, just change the `AUTODEPLOY_DEV_CHANNEL` variable.
-- Preview the exact message any time (no posting) with `DRY_RUN=1` — see above.
+- Change channel by editing the `AUTODEPLOY_DEV_CHANNEL` variable (affects both workflows).

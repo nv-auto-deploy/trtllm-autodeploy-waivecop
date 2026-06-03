@@ -1,54 +1,48 @@
-name: TRT-LLM AutoDeploy waivers
+name: TRT-LLM AutoDeploy new-waiver alerts
 
 on:
   schedule:
-    # GitHub Actions cron is UTC ONLY, and is best-effort (runs can be delayed).
-    # 07:00 America/Los_Angeles is 14:00 UTC during PDT and 15:00 UTC during PST.
-    # We register BOTH; the gate below runs whichever one corresponds to 7am in the
-    # CURRENT DST period. The gate keys off the timezone OFFSET + which cron fired
-    # (github.event.schedule) — NOT the wall-clock hour — so a GitHub cron delay can
-    # make the post arrive late, but it can no longer silently skip.
-    - cron: "0 14 * * 1-5"
-    - cron: "0 15 * * 1-5"
-  workflow_dispatch: {}   # allow manual runs (handy for testing; always posts)
+    # Hourly. GitHub cron is UTC + best-effort; ":23" dodges top-of-hour congestion.
+    # The job polls waives.txt and alerts only when a NEW AutoDeploy waiver appears.
+    - cron: "23 * * * *"
+  workflow_dispatch: {}   # manual run (checks immediately)
+
+# Needed so the job can commit the last-seen snapshot back to this repo.
+permissions:
+  contents: write
+
+# Serialize runs so two polls can't race on the snapshot commit.
+concurrency:
+  group: autodeploy-waiver-watch
+  cancel-in-progress: false
 
 jobs:
-  post:
+  watch:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Decide whether this run should post (7am Pacific, DST-aware)
-        id: gate
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual run — proceeding."
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          OFFSET="$(TZ=America/Los_Angeles date +%z)"   # -0700 (PDT) or -0800 (PST)
-          SCHED="${{ github.event.schedule }}"
-          echo "Pacific UTC offset: $OFFSET ; triggering cron: '$SCHED'"
-          # 14:00 UTC == 07:00 PDT ; 15:00 UTC == 07:00 PST.
-          if [ "$OFFSET" = "-0700" ] && [ "$SCHED" = "0 14 * * 1-5" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          elif [ "$OFFSET" = "-0800" ] && [ "$SCHED" = "0 15 * * 1-5" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Not the 7am-Pacific trigger for the current DST period — skipping."
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Set up Python
-        if: steps.gate.outputs.run == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Post AutoDeploy waivers to Slack
-        if: steps.gate.outputs.run == 'true'
+      - name: Check for new AutoDeploy waivers and alert Slack
         env:
           SLACK_BOT_TOKEN: ${{ secrets.AUTODEPLOY_WAIVECOP }}
           SLACK_CHANNEL_ID: ${{ vars.AUTODEPLOY_DEV_CHANNEL }}
-        run: python3 .github/scripts/post_autodeploy_waivers.py
+          STATE_FILE: .state/autodeploy_waivers.json
+        run: python3 .github/scripts/watch_autodeploy_waivers.py
+
+      - name: Persist snapshot if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .state/autodeploy_waivers.json
+          if git diff --cached --quiet; then
+            echo "No snapshot change to commit."
+          else
+            git commit -m "Update AutoDeploy waiver snapshot [skip ci]"
+            git push
+          fi
