@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-03T21:15:12.684071+00:00",
+  "updated": "2026-06-04T05:45:44.318841+00:00",
   "waivers": {
     "accuracy/test_llm_api_autodeploy.py::TestGemma4MoE::test_bf16": "6158397",
     "accuracy/test_llm_api_autodeploy.py::TestGemmaE2B::test_gemma4_e2b_it": "6194934",
@@ -16,6 +16,7 @@
     "unittest/auto_deploy/singlegpu/models/test_qwen3_5_moe.py::test_vision_attention_matches_reference": "6189450",
     "unittest/auto_deploy/singlegpu/models/test_qwen3_5_moe.py::test_vision_block_matches_reference": "6189450",
     "unittest/auto_deploy/singlegpu/models/test_qwen3_5_moe.py::test_vlm_wrapper_delta_is_request_scoped_no_cross_call_leakage": "6189450",
-    "unittest/auto_deploy/singlegpu/smoke/test_ad_build_small_single.py::test_build_ad[deepseek-ai/DeepSeek-V3-llm_extra_args10]": "5888827"
+    "unittest/auto_deploy/singlegpu/smoke/test_ad_build_small_single.py::test_build_ad[deepseek-ai/DeepSeek-V3-llm_extra_args10]": "5888827",
+    "unittest/auto_deploy/standalone/test_standalone_package.py::TestStandalonePackage::test_run_unit_tests": "6160629"
   }
 }
