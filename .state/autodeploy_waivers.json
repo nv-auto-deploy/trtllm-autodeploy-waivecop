@@ -1,11 +1,9 @@
 {
-  "updated": "2026-06-04T17:26:26.977118+00:00",
+  "updated": "2026-06-05T04:50:03.888798+00:00",
   "waivers": {
     "accuracy/test_llm_api_autodeploy.py::TestGemma4MoE::test_bf16": "6158397",
     "accuracy/test_llm_api_autodeploy.py::TestGemmaE2B::test_gemma4_e2b_it": "6194934",
     "accuracy/test_llm_api_autodeploy.py::TestMiniMaxM2::test_finegrained_fp8": "6158397",
-    "accuracy/test_llm_api_autodeploy.py::TestModelRegistryAccuracy::test_autodeploy_from_registry[google_gemma-3-1b-it-False]": "6248764",
-    "accuracy/test_llm_api_autodeploy.py::TestModelRegistryAccuracy::test_autodeploy_from_registry[mistralai_Ministral-8B-Instruct-2410-False]": "6248769",
     "accuracy/test_llm_api_autodeploy.py::TestModelRegistryAccuracy::test_autodeploy_from_registry[nvidia_Llama-3.1-8B-Instruct-NVFP4-True]": "6245279",
     "accuracy/test_llm_api_autodeploy.py::TestNemotronNanoV3::test_accuracy[bf16-4-trtllm]": "6185150",
     "accuracy/test_llm_api_autodeploy.py::TestNemotronNanoV3::test_accuracy[nvfp4-4-trtllm]": "6185150",
