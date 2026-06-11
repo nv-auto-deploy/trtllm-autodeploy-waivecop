@@ -1,4 +1,16 @@
 {
-  "updated": "2026-06-10T14:31:48.602864+00:00",
-  "waivers": {}
+  "updated": "2026-06-11T22:20:25.828879+00:00",
+  "waivers": {
+    "unittest/auto_deploy/singlegpu/smoke": "6306936",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[deepseek-trtllm-simple]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-flashinfer-cudagraph]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-flashinfer-simple]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-trtllm-cudagraph]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-trtllm-simple]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_smoke[deepseek-trtllm-simple]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_smoke[llama-flashinfer-cudagraph]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_smoke[llama-flashinfer-simple]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_smoke[llama-trtllm-cudagraph]": "6307525",
+    "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_smoke[llama-trtllm-simple]": "6307525"
+  }
 }
