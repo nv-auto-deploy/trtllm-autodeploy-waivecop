@@ -1,6 +1,7 @@
 {
-  "updated": "2026-06-11T22:20:25.828879+00:00",
+  "updated": "2026-06-12T05:10:46.062539+00:00",
   "waivers": {
+    "unittest/auto_deploy/singlegpu/shim/test_llm_config.py::test_speculative_flashinfer_fallback_disables_piecewise": "6309375",
     "unittest/auto_deploy/singlegpu/smoke": "6306936",
     "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[deepseek-trtllm-simple]": "6307525",
     "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-flashinfer-cudagraph]": "6307525",
