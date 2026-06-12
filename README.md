@@ -39,8 +39,9 @@ Both use the same bot token + channel.
 can't trigger on another repo's commits), so this **polls hourly and diffs against a saved
 snapshot** at `.state/autodeploy_waivers.json`:
 
-- Fires **only on additions** — new `auto_deploy`/`autodeploy` test entries. Un-waives
-  (removals) are ignored.
+- Fires **only on additions** — new entries whose test name matches `auto_deploy`,
+  `autodeploy`, or `test_ad_*` (all integration tests, since this is the integration
+  waiver list). Un-waives (removals) are ignored.
 - The alert names the new waiver(s) explicitly and posts the full current list (new ones
   marked `:new:`) as a threaded reply.
 - **First run is a baseline:** records the current set and does not alert; alerts start on

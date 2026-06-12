@@ -40,7 +40,7 @@ SOURCE_LINK = "https://sourcegraph.com/r/github.com/NVIDIA/TensorRT-LLM/-/blob/t
 STATE_FILE = os.environ.get("STATE_FILE", ".state/autodeploy_waivers.json")
 TZ = "America/Los_Angeles"
 
-AUTODEPLOY = re.compile(r"auto_?deploy", re.IGNORECASE)  # "autodeploy" or "auto_deploy"
+AUTODEPLOY = re.compile(r"auto_?deploy|test_ad_", re.IGNORECASE)  # autodeploy / auto_deploy / test_ad_*
 BUG = re.compile(r"nvbugs?/(\d+)", re.IGNORECASE)
 
 
