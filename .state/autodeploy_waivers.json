@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-12T22:02:34.181579+00:00",
+  "updated": "2026-06-17T07:30:45.424930+00:00",
   "waivers": {
     "disaggregated/test_ad_disagg.py::test_async_eagle3_full_model_handoff": "6306936",
     "disaggregated/test_ad_disagg.py::test_async_generation_matches_aggregate": "6306936",
@@ -13,6 +13,11 @@
     "disaggregated/test_ad_disagg.py::test_reduced_layer_handoff_matches_aggregate[tinyllama]": "6306936",
     "disaggregated/test_ad_disagg.py::test_tinyllama_batch_handoff_semantic_slots": "6306936",
     "disaggregated/test_ad_disagg_trtllm_serve.py::test_openai_completion": "6306936",
+    "full:L40S/accuracy/test_llm_api_autodeploy.py::TestLlama3_1_8B::test_auto_dtype[triton-False-1]": "6322045",
+    "full:L40S/accuracy/test_llm_api_autodeploy.py::TestLlama3_1_8B::test_auto_dtype[trtllm-False-1]": "6322045",
+    "full:L40S/accuracy/test_llm_api_autodeploy.py::TestModelRegistryAccuracy::test_autodeploy_from_registry[nvidia_Llama-3.1-8B-Instruct-FP8-True]": "6327143",
+    "full:L40S/accuracy/test_llm_api_autodeploy.py::TestNemotronH::test_auto_dtype[trtllm-flashinfer_ssm-False]": "6327147",
+    "full:L40S/accuracy/test_llm_api_autodeploy.py::TestNemotronH::test_auto_dtype[trtllm-triton_ssm-False]": "6327147",
     "unittest/auto_deploy/singlegpu/smoke": "6306936",
     "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[deepseek-trtllm-simple]": "6307525",
     "unittest/auto_deploy/singlegpu/smoke/test_disagg.py::test_autodeploy_disaggregated_batch_smoke[llama-flashinfer-cudagraph]": "6307525",
