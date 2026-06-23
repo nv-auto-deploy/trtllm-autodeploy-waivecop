@@ -40,7 +40,7 @@ can't trigger on another repo's commits), so this **polls hourly and diffs again
 snapshot** at `.state/autodeploy_waivers.json`:
 
 - Fires **only on additions** — new entries whose test name matches `auto_deploy`,
-  `autodeploy`, or `test_ad_*` (all integration tests, since this is the integration
+  `autodeploy`, or `*_ad_*` (all integration tests, since this is the integration
   waiver list). Un-waives (removals) are ignored.
 - The alert names the new waiver(s) explicitly and posts the full current list (new ones
   marked `:new:`) as a threaded reply.
